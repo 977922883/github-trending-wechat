@@ -8,11 +8,19 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Install pip packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
+
       - name: Run crawler & push
         env:
           SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
@@ -27,7 +35,7 @@ jobs:
               exit(1)
 
           url = "https://github.com/trending?since=daily"
-          headers = {"User-Agent":"Mozilla/5.0"}
+          headers = {"User-Agent": "Mozilla/5.0"}
           r = requests.get(url, headers=headers, timeout=20)
           soup = BeautifulSoup(r.text, "html.parser")
           items = soup.select("article.Box-row")[:5]
@@ -35,7 +43,7 @@ jobs:
           lines = []
           for it in items:
             a = it.select_one("h2 a")
-            repo = a.get_text(strip=True).replace("\n","")
+            repo = a.get_text(strip=True).replace("\n", "")
             link = "https://github.com" + a["href"]
             desc = it.select_one("p")
             desc = desc.get_text(strip=True) if desc else ""
