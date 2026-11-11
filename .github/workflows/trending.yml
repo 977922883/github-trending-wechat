@@ -29,16 +29,17 @@ jobs:
           import requests
           from bs4 import BeautifulSoup
 
-          skey = "${SERVERCHAN_SENDKEY}"
-          if not skey:
-              print("❌ SERVERCHAN_SENDKEY 为空！")
+          key = "${SERVERCHAN_SENDKEY}"
+          print("Got key:", key)
+          if not key or key == "":
+              print("❌ SendKey 为空！")
               exit(1)
 
           url = "https://github.com/trending?since=daily"
           headers = {"User-Agent": "Mozilla/5.0"}
           r = requests.get(url, headers=headers, timeout=20)
           soup = BeautifulSoup(r.text, "html.parser")
-          items = soup.select("article.Box-row")[:5]
+          items = soup.select("article.Box-row")[:10]
 
           lines = []
           for it in items:
@@ -49,12 +50,12 @@ jobs:
             desc = desc.get_text(strip=True) if desc else ""
             lines.append(f"- [{repo}]({link})\n  {desc}")
 
-          content = "\n".join(lines)
+          content = "🔥 GitHub Trending 今日热门\n\n" + "\n".join(lines)
+          api_url = f"https://sctapi.ftqq.com/{key}.send"
           payload = {
-              "title": "🔥 GitHub Trending 今日热门",
+              "title": "GitHub Trending",
               "desp": content
           }
-          api = f"https://sctapi.ftqq.com/{skey}.send"
-          res = requests.post(api, data=payload)
+          res = requests.post(api_url, data=payload)
           print("ServerChan Response:", res.text)
           PY
