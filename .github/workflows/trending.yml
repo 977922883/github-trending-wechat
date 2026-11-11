@@ -25,13 +25,14 @@ jobs:
         env:
           SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
         run: |
-          python - <<'PY'
+          cat > run.py <<'EOF'
+          import os
           import requests
           from bs4 import BeautifulSoup
 
-          key = "${SERVERCHAN_SENDKEY}"
+          key = os.getenv("SERVERCHAN_SENDKEY", "")
           print("Got key:", key)
-          if not key or key == "":
+          if not key:
               print("❌ SendKey 为空！")
               exit(1)
 
@@ -58,4 +59,5 @@ jobs:
           }
           res = requests.post(api_url, data=payload)
           print("ServerChan Response:", res.text)
-          PY
+          EOF
+          python run.py
